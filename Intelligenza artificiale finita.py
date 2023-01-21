@@ -82,7 +82,7 @@ except:
     model.add(layers.Dense(num_neurons2, kernel_regularizer=regularizers.l1(l1_reg)))
     model.add(layers.Activation('relu'))
     model.add(layers.Dropout(0.5))
-    
+
     model.add(layers.Dense(num_neurons3, kernel_regularizer=regularizers.l1(l1_reg)))
     model.add(layers.Activation('relu'))
     model.add(layers.Dropout(0.5))
