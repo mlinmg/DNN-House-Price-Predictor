@@ -5,7 +5,6 @@ import pandas as pd
 import re
 from tqdm import tqdm
 
-
 dataframe = pd.read_csv("dataset.csv")
 api = "AIzaSyBBh2tKOtB6mZ4BinYbVvWY0uBCsiuxGg8"
 
@@ -33,6 +32,19 @@ def get_distance(lat1, lng1, lat2, lng2):
     return json_data
 
 
+def leavingOnlyNumbers(dataframe=dataframe):
+    dataframe = dataframe
+    for index, row in tqdm(dataframe.iterrows()):
+        dataframe.at[index, 'PostoAuto'] = re.sub("[^0-9]", "", str(dataframe.at[index, 'PostoAuto']))
+        dataframe.at[index, 'EfficenzaEnergetica'] = re.sub("[^0-9]", "",
+                                                            str(dataframe.at[index, 'EfficenzaEnergetica']))
+        dataframe.at[index, 'SpeseCondominiali'] = re.sub("[^0-9]", "",
+                                                          str(dataframe.at[index, 'SpeseCondominiali']))
+        dataframe.at[index, 'target'] = re.sub("[^0-9]", "", str(dataframe.at[index, 'target']))
+        dataframe.at[index, 'Superficie'] = re.sub("[^0-9]", "", str(dataframe.at[index, 'Superficie']))
+        dataframe.at[index, 'Bagni'] = re.sub("[^0-9]", "", str(dataframe.at[index, 'Bagni']))
+
+
 def main():
     try:
         dataframe.drop(columns=["web-scraper-order", "web-scraper-start-url", "Proprietà", "Proprietà-href", "Nome"],
@@ -40,60 +52,60 @@ def main():
     except:
         pass
     print("Mettendo solo valori numerici")
-    for index, row in tqdm(dataframe.iterrows()):
-        dataframe.at[index, 'PostoAuto'] = re.sub("[^0-9]", "", str(dataframe.at[index, 'PostoAuto']))
-        dataframe.at[index, 'EfficenzaEnergetica'] = re.sub("[^0-9]", "",
-                                                            str(dataframe.at[index, 'EfficenzaEnergetica']))
-        dataframe.at[index, 'SpeseCondominiali'] = re.sub("[^0-9]", "", str(dataframe.at[index, 'SpeseCondominiali']))
-        dataframe.at[index, 'target'] = re.sub("[^0-9]", "", str(dataframe.at[index, 'target']))
-        dataframe.at[index, 'Superficie'] = re.sub("[^0-9]", "", str(dataframe.at[index, 'Superficie']))
-        dataframe.at[index, 'Bagni'] = re.sub("[^0-9]", "", str(dataframe.at[index, 'Bagni']))
-
+    leavingOnlyNumbers(dataframe=dataframe)
+    # replacing the newly formed "" with nan
     dataframe.replace("", np.nan, inplace=True)
     index = -1
-    dataframe["City"] = "City"
-    addressos = dataframe["Indirizzo"].to_list()
+    # Creating Address list
+    address_list = dataframe["Indirizzo"].to_list()
     print("Aggiungendo distanze")
-    for address in tqdm(addressos):
+    for address in tqdm(address_list):
         index += 1
         city = str(address).split("\n")
         dataframe.at[index, "City"] = city[0]
+        #Checking if surface is really a valid data
         if float(dataframe.at[index, 'Superficie']) < 10 or (float(dataframe.at[index, 'Superficie']) > 4000):
             dataframe.drop(index, inplace=True)
             continue
+        # Checking f the house state parameter is empty
         if str(dataframe.at[index, 'Stato']) == "nan":
             dataframe.drop(index, inplace=True)
             continue
         if str(dataframe.at[index, 'AltreCaratteristiche1']) == "nan":
             dataframe.drop(index, inplace=True)
             continue
+        # Checking if floor is empty
         if str(dataframe.at[index, 'Piano']) == "nan":
             dataframe.drop(index, inplace=True)
             continue
+        # Checking if address is empty
         if str(dataframe.at[index, 'Indirizzo']) == "nan":
             dataframe.drop(index, inplace=True)
             continue
-        if float(dataframe.at[index, 'EfficenzaEnergetica']) > 999:
-            num = str(dataframe.at[index, 'EfficenzaEnergetica'])[:3]
-            dataframe.at[index, 'EfficenzaEnergetica'] = float(num)
-        if float(dataframe.at[index, 'Locali']) > 10:
-            dataframe.drop(index, inplace=True)
-            continue
-        if "Appartamento, Intera proprieta" in str(dataframe.at[index, 'Tipologia']):
-            dataframe.at[index, 'Tipologia'] = "Appartamento, Intera proprieta"
-        if "Appartamento, Intera proprieta" in str(dataframe.at[index, 'Tipologia']):
-            dataframe.at[index, 'Tipologia'] = "Appartamento, Intera proprieta"
-        if "Appartamento, Intera proprieta" in str(dataframe.at[index, 'Tipologia']):
-            dataframe.at[index, 'Tipologia'] = "Appartamento, Intera proprieta"
-        if "Appartamento, Intera proprieta" in str(dataframe.at[index, 'Tipologia']):
-            dataframe.at[index, 'Tipologia'] = "Appartamento, Intera proprieta"
-        if str(dataframe.at[index, 'AnnoDiCostruzione']) != "nan":
-            dataframe.at[index, 'AnnoDiCostruzione'] = float(dataframe.at[index, 'AnnoDiCostruzione']) * 1000
+        # Check if price is valid
         if (float(dataframe.at[index, 'target']) < 5000) or (str(dataframe.at[index, 'target']) == "nan"):
             dataframe.drop(index, inplace=True)
             continue
+        # Checking if locali is a valid number
+        if float(dataframe.at[index, 'Locali']) > 10:
+            dataframe.drop(index, inplace=True)
+            continue
+        # Checking if energy efficiency is a valid number in an accepted format
+        if float(dataframe.at[index, 'EfficenzaEnergetica']) > 999:
+            num = str(dataframe.at[index, 'EfficenzaEnergetica'])[:3]
+            dataframe.at[index, 'EfficenzaEnergetica'] = float(num)
+        # Checking if the house is a mono-family house or an apartment
+        if "Appartamento" in str(dataframe.at[index, 'Tipologia']):
+            dataframe.at[index, 'Tipologia'] = "Appartamento"
+        if "Appartamento" in str(dataframe.at[index, 'Tipologia']):
+            dataframe.at[index, 'Tipologia'] = "Appartamento"
+        # Checking if building year is nan
+        if str(dataframe.at[index, 'AnnoDiCostruzione']) != "nan":
+            dataframe.at[index, 'AnnoDiCostruzione'] = float(dataframe.at[index, 'AnnoDiCostruzione']) * 1000
+        # Checking if bathroom number is valid
         if float(dataframe.at[index, 'Bagni']) > 5:
             dataframe.at[index, 'Bagni'] = 5
+        # Checking if Parking spot number is valid
         if 9 < float(dataframe.at[index, 'PostoAuto']) < 100:
             num = str(dataframe.at[index, 'PostoAuto'])[:1]
             dataframe.at[index, 'PostoAuto'] = float(num)
