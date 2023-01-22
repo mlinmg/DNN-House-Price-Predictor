@@ -6,7 +6,7 @@ This is a project in which I built and trained an AI, capable of predicting the 
 Copy this repository on your machine.
 
 ```bash
-git clone https://github.com/mlinmg/AI_GPU_try.git
+git clone https://github.com/mlinmg/DNN-House-Price-Predictor.git
 ```
 
 ## Usage
@@ -15,10 +15,10 @@ You can choose to either use the pre-trained model(deep_learning_model.h5) or to
 from keras.saving.save import load_model
 
 # insert your data here
-data = yourdata
+data = yourdata # In the format 
 
 # load the model
-model = load_model('model.h5')
+model = load_model('deep_learning_model.h5')
 
 # make the prediction 
 y_pred = model.predict(insert)
