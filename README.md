@@ -1,6 +1,6 @@
 # Italian House Price Predictor - DNN
 
-This is a project in which I built and trained an AI, capable of predicting the house prices in Italy.
+This is one of my first project with ML/AI. I built an AI capable of predicting the house prices in Italy.
 ## Installation
 
 Copy this repository on your machine.
